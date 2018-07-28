@@ -1,0 +1,136 @@
+swagger: "2.0"
+info:
+  description: "Transfer Service API"
+  version: "1.0.0"
+  title: "TransferService - The Transfer Service API"
+  contact:
+    email: "mark.bertels@teamrockstars.nl"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /accounts:
+    get:
+      description: "Gets the complete list of all accounts"
+      summary: "Gets the complete list of all accounts"
+      tags:
+      - "account"
+      operationId: "getAccounts"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Gets a list of all accounts known to the system"
+          schema:
+            $ref: "#/definitions/AccountListResult"
+    post:
+      description: "Create an account"
+      summary: "Create an account"
+      tags:
+      - "account"
+      operationId: "addAccount"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "Account"
+        in: "body"
+        description: "Object used to create an account. The id field is optional."
+        schema:
+          $ref: "#/definitions/Account"
+      responses:
+        201:
+          description: "Successfully created an account"
+          schema:
+            $ref: "#/definitions/Account"
+        400:
+          description: "Invalid input"
+
+  /accounts/{id}:
+    get:
+      summary: "Find account by ID"
+      description: "Returns a single account"
+      tags:
+      - "account"
+      operationId: "getAccountById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of account to return"
+        required: true
+        type: "string"
+        format: "uuid"
+      responses:
+        200:
+          description: "Get a single account by id"
+          schema:
+            $ref: "#/definitions/Account"
+        404:
+          description: "Account not found"
+  /accountexchange:
+    post:
+      description: "Exchanges currency across 2 accounts"
+      summary: "Exchanges currency between 2 accounts"
+      tags:
+      - "exchange"
+      operationId: "processExchange"
+      parameters:
+      - name: "ExchangeOperation"
+        in: "body"
+        description: "Invalid input, see details of the message"
+        schema:
+          $ref: "#/definitions/AccountExchange"
+      responses:
+        204:
+          description: "Successfully transferred funds."
+        400:
+          description: "Invalid request. See response details."
+
+definitions:
+  Account:
+    type: "object"
+    required:
+    - "name"
+    - "balance"
+    properties:
+      id:
+        $ref: "#/definitions/UUID"
+      balance:
+        $ref: "#/definitions/CurrencyFormat"
+      name:
+        type: "string"
+        example: "Mark Bertels"
+        maxLength: 140
+  AccountListResult:
+    type: "object"
+    required:
+    - "accounts"
+    properties:
+      accounts:
+        type: array
+        items:
+          $ref: "#/definitions/Account"
+  AccountExchange:
+    type: "object"
+    required:
+    - "fromAccount"
+    - "toAccount"
+    - "amount"
+    properties:
+      fromAccount:
+        $ref: "#/definitions/UUID"
+      toAccount:
+        $ref: "#/definitions/UUID"
+      amount:
+        $ref: "#/definitions/CurrencyFormat"
+
+  UUID:
+    type: "string"
+    example: "43ecde6b-f3a8-4687-8d45-ef95f238df30"
+    format: "uuid"
+  CurrencyFormat:
+    type: "string"
+    example: "100.00"
+    pattern: '[0-9]+(\.[0-9][0-9]?)?'
